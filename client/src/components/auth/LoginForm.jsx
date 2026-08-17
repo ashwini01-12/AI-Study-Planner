@@ -1,8 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+
 import GoogleButton from "./GoogleButton";
+import api from "../../api/axios.js";
 
 function LoginForm() {
+  const navigate = useNavigate();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -12,6 +16,7 @@ function LoginForm() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Handle input changes
   const handleChange = (e) => {
     const { name, value } = e.target;
 
@@ -20,13 +25,16 @@ function LoginForm() {
       [name]: value,
     }));
 
-    // Remove error while user types
+    // Clear previous error while typing
     if (error) {
       setError("");
     }
   };
 
+  // Login
   const handleSubmit = async (e) => {
+    console.log("FRONTEND ORIGIN:", window.location.origin);
+    console.log("API URL:", import.meta.env.VITE_API_URL);
     e.preventDefault();
 
     setError("");
@@ -48,21 +56,49 @@ function LoginForm() {
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Backend API will be connected here
-    setTimeout(() => {
-      console.log("Login data:", formData);
+      const response = await api.post("/auth/login", {
+        email: formData.email.trim(),
+        password: formData.password,
+      });
+
+      console.log("LOGIN RESPONSE:", response.data);
+      console.log("LOGIN STATUS:", response.status);
+
+      const { token, user } = response.data;
+
+      // Save authentication data
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      // Redirect to dashboard
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error("LOGIN ERROR:", error);
+      console.error("STATUS:", error.response?.status);
+      console.error("BACKEND MESSAGE:", error.response?.data);
+
+      setError(
+        error.response?.data?.message ||
+        "Login failed. Please check your credentials and try again."
+      );
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
+  // Google Login
   const handleGoogleLogin = () => {
-    console.log("Google login");
+    const apiUrl = import.meta.env.VITE_API_URL;
+
+    window.location.href = `${apiUrl}/auth/google`;
   };
 
   return (
     <div>
+      {/* Google Login */}
       <GoogleButton onClick={handleGoogleLogin} />
 
       {/* Divider */}
@@ -78,13 +114,16 @@ function LoginForm() {
 
       {/* Error */}
       {error && (
-        <div className="mb-5 px-4 py-3 rounded-xl border border-red-500/20 bg-red-500/10 text-sm text-red-400">
+        <div
+          role="alert"
+          className="mb-5 px-4 py-3 rounded-xl border border-red-500/20 bg-red-500/10 text-sm text-red-400"
+        >
           {error}
         </div>
       )}
 
+      {/* Login Form */}
       <form onSubmit={handleSubmit} className="space-y-5">
-
         {/* Email */}
         <div>
           <label
@@ -102,7 +141,8 @@ function LoginForm() {
             onChange={handleChange}
             placeholder="Enter your email"
             autoComplete="email"
-            className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition"
+            disabled={loading}
+            className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition disabled:opacity-60"
           />
         </div>
 
@@ -118,14 +158,14 @@ function LoginForm() {
 
             <button
               type="button"
-              className="text-xs text-purple-400 hover:text-purple-300 transition"
+              disabled={loading}
+              className="text-xs text-purple-400 hover:text-purple-300 transition disabled:opacity-50"
             >
               Forgot password?
             </button>
           </div>
 
           <div className="relative">
-
             <input
               id="password"
               type={showPassword ? "text" : "password"}
@@ -134,22 +174,24 @@ function LoginForm() {
               onChange={handleChange}
               placeholder="Enter your password"
               autoComplete="current-password"
-              className="w-full h-12 px-4 pr-12 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition"
+              disabled={loading}
+              className="w-full h-12 px-4 pr-12 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition disabled:opacity-60"
             />
 
+            {/* Password visibility */}
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
-              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition"
+              disabled={loading}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition disabled:opacity-50"
               aria-label={showPassword ? "Hide password" : "Show password"}
             >
               {showPassword ? "◉" : "◌"}
             </button>
-
           </div>
         </div>
 
-        {/* Login */}
+        {/* Login Button */}
         <button
           type="submit"
           disabled={loading}
@@ -157,13 +199,11 @@ function LoginForm() {
         >
           {loading ? "Signing in..." : "Login →"}
         </button>
-
       </form>
 
       {/* Register */}
       <p className="mt-7 text-center text-sm text-gray-500">
         Don't have an account?{" "}
-
         <Link
           to="/register"
           className="text-purple-400 hover:text-purple-300 font-medium transition"

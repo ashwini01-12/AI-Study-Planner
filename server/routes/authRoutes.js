@@ -34,17 +34,9 @@ router.get(
       },
     );
 
-    res.status(200).json({
-      success: true,
-      message:  "Google login successful",
-      token,
-      user: {
-        id: req.user._id,
-        name: req.user.name,
-        email: req.user.email,
-        profilePicture: req.user.profilePicture,
-      },
-    });
+    res.redirect(
+      `${process.env.CLIENT_URL}/auth/google/success?token=${token}`
+    );
   },
 );
 

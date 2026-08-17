@@ -12,12 +12,15 @@ passport.use(
     async (accessToken, refreshToken, profile, done) => {
       try {
         const googleId = profile.id;
-        const email = profile.emails?.[0].value;
+        const email = profile.emails?.[0]?.value?.trim().toLowerCase();
         const name = profile.displayName;
         const profilePicture = profile.photos?.[0]?.value;
 
         if (!email) {
-          return done(new Error("Google account email not available"), null);
+          return done(
+            new Error("Google account email not available"),
+            null
+          );
         }
 
         // 1. Find user using Google ID
@@ -47,14 +50,12 @@ passport.use(
           profilePicture,
         });
 
-
-        return done(null, profile);
-        
+        return done(null, user);
       } catch (error) {
         return done(error, null);
       }
-    },
-  ),
+    }
+  )
 );
 
 module.exports = passport;

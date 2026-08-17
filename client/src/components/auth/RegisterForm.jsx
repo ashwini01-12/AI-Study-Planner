@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import GoogleButton from "./GoogleButton";
+import api from "../../api/axios.js"
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -73,17 +74,32 @@ function RegisterForm() {
       return;
     }
 
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // Backend registration API will be connected here
-    setTimeout(() => {
-      console.log("Registration data:", formData);
+      const response = await api.post("/auth/register", {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+      });
+
+      console.log("Registration successful:", response.data);
+
+      // Registration successful → Login
+      window.location.href = "/login";
+
+    } catch (error) {
+      setError(
+        error.response?.data?.message ||
+        "Registration failed. Please try again."
+      );
+    } finally {
       setLoading(false);
-    }, 800);
+    }
   };
 
   const handleGoogleRegister = () => {
-    console.log("Google registration");
+    window.location.href = `${import.meta.env.VITE_API_URL}/auth/google`;
   };
 
   return (
