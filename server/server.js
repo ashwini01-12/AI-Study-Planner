@@ -5,7 +5,10 @@ require("dotenv").config();
 const connectDB = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const passport = require("./config/passport");
-
+const goalRoutes = require("./routes/goalRoutes");
+const planRoutes = require("./routes/planRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
+const progressRoutes = require("./routes/progressRoutes");
 const app = express();
 
 app.use(
@@ -18,8 +21,11 @@ app.use(
 
 app.use(express.json());
 app.use(passport.initialize());
-
+app.use("/api/goals", goalRoutes);
 app.use("/api/auth", authRoutes);
+app.use("/api/plans", planRoutes);
+app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/progress", progressRoutes);
 
 const PORT = process.env.PORT || 8080;
 
@@ -34,5 +40,10 @@ const startServer = async () => {
     console.error("Failed to start server:", error.message);
   }
 };
+
+
+
+
+
 
 startServer();
