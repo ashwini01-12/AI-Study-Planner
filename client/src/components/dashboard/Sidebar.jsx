@@ -12,6 +12,11 @@ const navigation = [
     path: "/goals",
   },
   {
+    label: "Syllabus",
+    icon: "▤",
+    path: "/syllabus",
+  },
+  {
     label: "Study Plan",
     icon: "◫",
     path: "/study-plan",
@@ -70,11 +75,10 @@ function Sidebar() {
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
-                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition ${
-                  isActive
+                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm transition ${isActive
                     ? "bg-purple-500/10 text-purple-300 border border-purple-500/15"
                     : "text-gray-500 hover:text-gray-200 hover:bg-white/[0.04]"
-                }`}
+                  }`}
               >
                 <span className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/[0.03]">
                   {item.icon}

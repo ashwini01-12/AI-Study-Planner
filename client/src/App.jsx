@@ -1,10 +1,14 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import LandingPage from "./pages/LandingPage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
-import GoogleSuccess from "./pages/GoogleSuccess";
-import Dashboard from "./pages/Dashboard";
+import LandingPage from "./pages/LandingPage.jsx";
+import LoginPage from "./pages/LoginPage.jsx";
+import RegisterPage from "./pages/RegisterPage.jsx";
+import GoogleSuccess from "./pages/GoogleSuccess.jsx";
+import Dashboard from "./pages/Dashboard.jsx";
+import GoalsPage from "./pages/GoalsPage.jsx";
+import SyllabusPage from "./pages/SyllabusPage.jsx";
+import StudyPlanPage from "./pages/StudyPlanPage.jsx";
+
 
 import ProtectedRoute from "./components/auth/ProtectedRoute.jsx";
 
@@ -21,6 +25,10 @@ function App() {
         {/* Protected Routes */}
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/goals" element={<GoalsPage />} />
+          <Route path="/syllabus" element={<SyllabusPage />} />
+          <Route path="/study-plan" element={<StudyPlanPage />} />
+
         </Route>
 
       </Routes>
