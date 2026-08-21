@@ -1,4 +1,8 @@
+import { useNavigate } from "react-router-dom";
+
 function GoalCard({ goal, onEdit, onDelete }) {
+  const navigate = useNavigate();
+
   return (
     <div className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 hover:bg-white/[0.05] hover:border-purple-500/20 transition">
 
@@ -95,6 +99,16 @@ function GoalCard({ goal, onEdit, onDelete }) {
         </button>
 
       </div>
+
+
+      {/* Manage Syllabus */}
+      <button
+        type="button"
+        onClick={() => navigate(`/goals/${goal._id}/syllabus`)}
+        className="w-full mt-5 py-3 rounded-xl bg-purple-500/10 border border-purple-500/20 text-sm text-purple-300 hover:bg-purple-500/20 transition"
+      >
+        Manage Syllabus →
+      </button>
 
     </div>
   );

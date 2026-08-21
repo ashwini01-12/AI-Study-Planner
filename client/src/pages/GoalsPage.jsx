@@ -10,90 +10,130 @@ import GoalsHeader from "../components/goals/GoalsHeader.jsx";
 import api from "../api/axios.js";
 
 function GoalsPage() {
+  const [goals, setGoals] = useState([]);
   const [showForm, setShowForm] = useState(false);
   const [editingGoal, setEditingGoal] = useState(null);
 
-  const [goals, setGoals] = useState([]);
-
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   const [error, setError] = useState("");
 
   // Fetch goals
-  useEffect(() => {
-    const fetchGoals = async () => {
-      try {
-        setLoading(true);
-        setError("");
+  const fetchGoals = async () => {
+    try {
+      setLoading(true);
+      setError("");
 
-        const response = await api.get("/goals");
+      const response = await api.get("/goals");
 
-        console.log("GET GOALS:", response.data);
+      setGoals(response.data.goals || []);
+    } catch (error) {
+      console.error("GET GOALS ERROR:", error);
 
-        setGoals(response.data.goals || []);
-      } catch (error) {
-        console.error("GET GOALS ERROR:", error);
-        console.error("STATUS:", error.response?.status);
-        console.error("DATA:", error.response?.data);
-
-        setError(
-          error.response?.data?.message ||
-            "Failed to load your goals."
-        );
-      } finally {
-        setLoading(false);
+      if (error.response?.status === 401) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/login";
+        return;
       }
-    };
 
+      setError(
+        error.response?.data?.message ||
+          "Failed to load your goals."
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchGoals();
   }, []);
 
-  // Create goal
-  const handleCreateGoal = async (goalData) => {
+  // Create / Update
+  const handleSubmitGoal = async (goalData) => {
     try {
       setSaving(true);
       setError("");
 
-      const response = await api.post("/goals", goalData);
+      if (editingGoal) {
+        const response = await api.patch(
+          `/goals/${editingGoal._id}`,
+          goalData
+        );
 
-      console.log("CREATE GOAL:", response.data);
+        const updatedGoal = response.data.goal;
 
-      const newGoal = response.data.goal;
+        setGoals((prev) =>
+          prev.map((goal) =>
+            goal._id === updatedGoal._id
+              ? updatedGoal
+              : goal
+          )
+        );
+      } else {
+        const response = await api.post("/goals", goalData);
 
-      setGoals((prev) => [newGoal, ...prev]);
+        const newGoal = response.data.goal;
+
+        setGoals((prev) => [newGoal, ...prev]);
+      }
 
       setShowForm(false);
+      setEditingGoal(null);
     } catch (error) {
-      console.error("CREATE GOAL ERROR:", error);
+      console.error("SAVE GOAL ERROR:", error);
       console.error("STATUS:", error.response?.status);
       console.error("DATA:", error.response?.data);
 
       setError(
         error.response?.data?.message ||
-          "Failed to create goal."
+          "Failed to save goal."
       );
     } finally {
       setSaving(false);
     }
   };
 
-  // Temporary edit handler
-  // Backend does not have update API yet
+  // Edit
   const handleEditGoal = (goal) => {
+    setError("");
     setEditingGoal(goal);
     setShowForm(true);
-
-    setError(
-      "Edit mode is currently UI-only. Backend update API is not available yet."
-    );
   };
 
-  // Temporary delete handler
-  // Backend does not have delete API yet
-  const handleDeleteGoal = () => {
-    setError(
-      "Delete is currently unavailable because the backend delete API is not ready yet."
+  // Delete
+  const handleDeleteGoal = async (goalId) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to delete this goal?"
     );
+
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      setDeletingId(goalId);
+      setError("");
+
+      await api.delete(`/goals/${goalId}`);
+
+      setGoals((prev) =>
+        prev.filter((goal) => goal._id !== goalId)
+      );
+    } catch (error) {
+      console.error("DELETE GOAL ERROR:", error);
+      console.error("STATUS:", error.response?.status);
+      console.error("DATA:", error.response?.data);
+
+      setError(
+        error.response?.data?.message ||
+          "Failed to delete goal."
+      );
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   const handleFormCancel = () => {
@@ -132,11 +172,7 @@ function GoalsPage() {
             <div className="mt-8">
               <GoalForm
                 editingGoal={editingGoal}
-                onSubmit={
-                  editingGoal
-                    ? handleEditGoal
-                    : handleCreateGoal
-                }
+                onSubmit={handleSubmitGoal}
                 onCancel={handleFormCancel}
                 loading={saving}
               />
@@ -168,22 +204,18 @@ function GoalsPage() {
                   }}
                   onEdit={handleEditGoal}
                   onDelete={handleDeleteGoal}
+                  deleting={deletingId === goal._id}
                 />
               ))}
             </div>
           ) : (
             <div className="mt-10 rounded-2xl border border-dashed border-white/10 p-12 text-center">
-
-              <div className="w-14 h-14 mx-auto rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 text-xl">
-                +
-              </div>
-
-              <p className="mt-5 text-white font-medium">
+              <p className="text-white font-medium">
                 No goals yet
               </p>
 
               <p className="mt-2 text-sm text-gray-500">
-                Create your first learning goal to start building your study plan.
+                Create your first learning goal to get started.
               </p>
 
               <button

@@ -1,11 +1,12 @@
 import { useState } from "react";
 
-function SyllabusForm({ onSubmit, onCancel }) {
+function SyllabusForm({ onSubmit, onCancel, loading = false }) {
   const [subjectName, setSubjectName] = useState("");
   const [topicInput, setTopicInput] = useState("");
   const [topics, setTopics] = useState([]);
   const [error, setError] = useState("");
 
+  // Add Topic
   const handleAddTopic = () => {
     const topic = topicInput.trim();
 
@@ -14,7 +15,13 @@ function SyllabusForm({ onSubmit, onCancel }) {
       return;
     }
 
-    if (topics.some((item) => item.name.toLowerCase() === topic.toLowerCase())) {
+    // Prevent duplicate topics
+    if (
+      topics.some(
+        (item) =>
+          item.name.toLowerCase() === topic.toLowerCase()
+      )
+    ) {
       setError("This topic has already been added.");
       return;
     }
@@ -30,14 +37,22 @@ function SyllabusForm({ onSubmit, onCancel }) {
     setError("");
   };
 
+  // Remove Topic
   const handleRemoveTopic = (indexToRemove) => {
     setTopics((prev) =>
-      prev.filter((_, index) => index !== indexToRemove)
+      prev.filter(
+        (_, index) => index !== indexToRemove
+      )
     );
   };
 
+  // Submit Form
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (loading) {
+      return;
+    }
 
     if (!subjectName.trim()) {
       setError("Please enter a subject name.");
@@ -48,6 +63,8 @@ function SyllabusForm({ onSubmit, onCancel }) {
       setError("Please add at least one topic.");
       return;
     }
+
+    setError("");
 
     onSubmit({
       name: subjectName.trim(),
@@ -69,8 +86,8 @@ function SyllabusForm({ onSubmit, onCancel }) {
         </h2>
 
         <p className="mt-2 text-sm text-gray-500 leading-6">
-          Add the subject and break it down into the topics you want
-          to study.
+          Add the subject and break it down into the topics
+          you want to study.
         </p>
       </div>
 
@@ -81,7 +98,10 @@ function SyllabusForm({ onSubmit, onCancel }) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="mt-7 space-y-6">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-7 space-y-6"
+      >
 
         {/* Subject */}
         <div>
@@ -96,6 +116,7 @@ function SyllabusForm({ onSubmit, onCancel }) {
             id="subject-name"
             type="text"
             value={subjectName}
+            disabled={loading}
             onChange={(e) => {
               setSubjectName(e.target.value);
 
@@ -104,7 +125,7 @@ function SyllabusForm({ onSubmit, onCancel }) {
               }
             }}
             placeholder="e.g. Machine Learning"
-            className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition"
+            className="w-full h-12 px-4 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition disabled:opacity-50"
           />
         </div>
 
@@ -122,6 +143,7 @@ function SyllabusForm({ onSubmit, onCancel }) {
               id="topic-input"
               type="text"
               value={topicInput}
+              disabled={loading}
               onChange={(e) => {
                 setTopicInput(e.target.value);
 
@@ -136,13 +158,14 @@ function SyllabusForm({ onSubmit, onCancel }) {
                 }
               }}
               placeholder="e.g. Decision Trees"
-              className="flex-1 h-12 px-4 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition"
+              className="flex-1 h-12 px-4 rounded-xl border border-white/10 bg-white/[0.04] text-white placeholder:text-gray-600 outline-none focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/10 transition disabled:opacity-50"
             />
 
             <button
               type="button"
               onClick={handleAddTopic}
-              className="px-5 h-12 rounded-xl border border-purple-500/20 bg-purple-500/10 text-sm font-medium text-purple-300 hover:bg-purple-500/20 transition"
+              disabled={loading}
+              className="px-5 h-12 rounded-xl border border-purple-500/20 bg-purple-500/10 text-sm font-medium text-purple-300 hover:bg-purple-500/20 transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Add
             </button>
@@ -158,7 +181,8 @@ function SyllabusForm({ onSubmit, onCancel }) {
               </p>
 
               <span className="text-xs text-gray-600">
-                {topics.length} topic{topics.length !== 1 ? "s" : ""}
+                {topics.length} topic
+                {topics.length !== 1 ? "s" : ""}
               </span>
             </div>
 
@@ -180,8 +204,11 @@ function SyllabusForm({ onSubmit, onCancel }) {
 
                   <button
                     type="button"
-                    onClick={() => handleRemoveTopic(index)}
-                    className="text-xs text-red-400 hover:text-red-300 transition"
+                    disabled={loading}
+                    onClick={() =>
+                      handleRemoveTopic(index)
+                    }
+                    className="text-xs text-red-400 hover:text-red-300 transition disabled:opacity-50"
                   >
                     Remove
                   </button>
@@ -197,20 +224,21 @@ function SyllabusForm({ onSubmit, onCancel }) {
           <button
             type="button"
             onClick={onCancel}
-            className="px-5 py-3 rounded-xl border border-white/10 text-sm text-gray-400 hover:text-white hover:bg-white/[0.04] transition"
+            disabled={loading}
+            className="px-5 py-3 rounded-xl border border-white/10 text-sm text-gray-400 hover:text-white hover:bg-white/[0.04] transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
 
           <button
             type="submit"
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:scale-[1.01] active:scale-[0.99] transition"
+            disabled={loading}
+            className="px-5 py-3 rounded-xl bg-gradient-to-r from-purple-500 to-blue-500 text-sm font-semibold text-white shadow-lg shadow-purple-500/20 hover:scale-[1.01] active:scale-[0.99] transition disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
           >
-            Add Subject →
+            {loading ? "Adding Subject..." : "Add Subject →"}
           </button>
 
         </div>
-
       </form>
     </div>
   );

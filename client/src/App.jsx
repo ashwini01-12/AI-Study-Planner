@@ -26,7 +26,10 @@ function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/goals" element={<GoalsPage />} />
-          <Route path="/syllabus" element={<SyllabusPage />} />
+          <Route
+            path="/goals/:goalId/syllabus"
+            element={<SyllabusPage />}
+          />
           <Route path="/study-plan" element={<StudyPlanPage />} />
 
         </Route>
