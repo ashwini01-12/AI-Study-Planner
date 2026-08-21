@@ -39,7 +39,15 @@ const studyGoalSchema = new mongoose.Schema(
 
         topics: [
           {
-            type: String,
+            name: {
+              type: String,
+              required: true,
+            },
+
+            completed: {
+              type: Boolean,
+              default: false,
+            },
           },
         ],
       },
@@ -56,6 +64,4 @@ const studyGoalSchema = new mongoose.Schema(
   },
 );
 
-
-
-module.exports = mongoose.model("StudyGoal",studyGoalSchema);
+module.exports = mongoose.model("StudyGoal", studyGoalSchema);
